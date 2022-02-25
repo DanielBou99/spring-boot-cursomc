@@ -20,40 +20,40 @@ import com.danielsouza.cursomc.services.exceptions.ObjectNotFoundException;
 public class CategoriaService {
 
 	@Autowired
-	private CategoriaRepository categoriaRepository;
+	private CategoriaRepository repo;
 
 	public Categoria findById(Integer id) {
-		Optional<Categoria> categoria = categoriaRepository.findById(id);
+		Optional<Categoria> categoria = repo.findById(id);
 		return categoria
 				.orElseThrow(() -> new ObjectNotFoundException("Nenhuma categoria encontrada para ID: " + id + "."));
 	}
 
 	public Categoria insert(Categoria obj) {
 		obj.setId(null);
-		return categoriaRepository.save(obj);
+		return repo.save(obj);
 	}
 
 	public Categoria update(Categoria obj) {
 		this.findById(obj.getId());
-		return categoriaRepository.save(obj);
+		return repo.save(obj);
 	}
 
 	public void delete(Integer id) {
 		this.findById(id);
 		try {
-			categoriaRepository.deleteById(id);
+			repo.deleteById(id);
 		} catch (DataIntegrityViolationException e) {
 			throw new DataIntegrityException("Não é possível excluir uma categoria que possui produtos.");
 		}
 	}
 
 	public List<Categoria> findAll() {
-		return categoriaRepository.findAll();
+		return repo.findAll();
 	}
 	
 	public Page<Categoria> findPage(Integer page, Integer linesPerPage, String orderBy, String direction) {
 		PageRequest pageRequest = PageRequest.of(page, linesPerPage, Direction.valueOf(direction), orderBy);
-		return categoriaRepository.findAll(pageRequest);
+		return repo.findAll(pageRequest);
 	}
 	
 	public Categoria fromDTO(CategoriaDTO categoriaDTO) {

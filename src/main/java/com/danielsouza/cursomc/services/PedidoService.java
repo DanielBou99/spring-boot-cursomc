@@ -11,6 +11,7 @@ import com.danielsouza.cursomc.domain.PagamentoComBoleto;
 import com.danielsouza.cursomc.domain.Pedido;
 import com.danielsouza.cursomc.domain.Produto;
 import com.danielsouza.cursomc.domain.enums.EstadoPagamento;
+import com.danielsouza.cursomc.repositories.ClienteRepository;
 import com.danielsouza.cursomc.repositories.ItemPedidoRepository;
 import com.danielsouza.cursomc.repositories.PagamentoRepository;
 import com.danielsouza.cursomc.repositories.PedidoRepository;
@@ -35,6 +36,9 @@ public class PedidoService {
 	@Autowired
 	private ItemPedidoRepository itemPedidoRepository;
 	
+	@Autowired
+	private ClienteRepository clienteRepository;
+	
 	public Pedido findById(Integer id) {
 		Optional<Pedido> pedido = repo.findById(id);
 		return pedido.orElseThrow(() -> new ObjectNotFoundException("Nenhum Pedido encontrado para ID: " + id + "."));
@@ -43,6 +47,7 @@ public class PedidoService {
 	public Pedido insert(Pedido obj) {
 		obj.setId(null);
 		obj.setInstante(new Date());
+		obj.setCliente(clienteRepository.findById(obj.getCliente().getId()).get());
 		obj.getPagamento().setEstado(EstadoPagamento.PENDENTE);
 		obj.getPagamento().setPedido(obj);
 		if (obj.getPagamento() instanceof PagamentoComBoleto) {
@@ -54,6 +59,7 @@ public class PedidoService {
 		for (ItemPedido ip: obj.getItens()) {
 			ip.setDesconto(0.0);
 			Optional<Produto> produto = produtoRepository.findById(ip.getProduto().getId());
+			ip.setProduto(produto.get());
 			ip.setPreco(produto.get().getPreco());
 			ip.setPedido(obj);
 		}

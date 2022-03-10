@@ -17,10 +17,13 @@ import com.danielsouza.cursomc.domain.Cidade;
 import com.danielsouza.cursomc.domain.Cliente;
 import com.danielsouza.cursomc.domain.ClienteNewDTO;
 import com.danielsouza.cursomc.domain.Endereco;
+import com.danielsouza.cursomc.domain.enums.Perfil;
 import com.danielsouza.cursomc.domain.enums.TipoCliente;
 import com.danielsouza.cursomc.dto.ClienteDTO;
 import com.danielsouza.cursomc.repositories.ClienteRepository;
 import com.danielsouza.cursomc.repositories.EnderecoRepository;
+import com.danielsouza.cursomc.security.UserSS;
+import com.danielsouza.cursomc.services.exceptions.AuthorizationException;
 import com.danielsouza.cursomc.services.exceptions.DataIntegrityException;
 import com.danielsouza.cursomc.services.exceptions.ObjectNotFoundException;
 
@@ -37,6 +40,12 @@ public class ClienteService {
 	private BCryptPasswordEncoder pe;
 
 	public Cliente findById(Integer id) {
+		
+		UserSS user = UserService.authenticated();
+		if (user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+			throw new AuthorizationException("Acesso negado");
+		}
+		
 		Optional<Cliente> cliente = repo.findById(id);
 		return cliente.orElseThrow(() -> new ObjectNotFoundException("Nenhum Cliente encontrado para ID: " + id + "."));
 	}

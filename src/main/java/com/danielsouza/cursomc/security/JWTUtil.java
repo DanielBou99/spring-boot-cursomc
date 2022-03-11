@@ -22,7 +22,7 @@ public class JWTUtil {
 	public String generateToken(String username) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
-		cal.add(Calendar.HOUR_OF_DAY, 1);
+		cal.add(Calendar.MINUTE, 1);
 		cal.getTime();
 		return Jwts.builder()
 				.setSubject(username)

@@ -28,11 +28,11 @@ public class JWTUtil {
 	public String generateToken(String username) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
-		cal.add(Calendar.MINUTE, 1);
-		cal.getTime();
+		cal.add(Calendar.MINUTE, 30);
+		Date expiration = cal.getTime();
 		return Jwts.builder()
 				.setSubject(username)
-				.setExpiration(cal.getTime())
+				.setExpiration(expiration)
 				.signWith(SignatureAlgorithm.HS512, secret.getBytes())
 				.compact();
 	}

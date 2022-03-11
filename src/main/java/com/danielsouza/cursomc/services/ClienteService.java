@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import com.danielsouza.cursomc.domain.enums.TipoCliente;
 import com.danielsouza.cursomc.dto.ClienteDTO;
 import com.danielsouza.cursomc.repositories.ClienteRepository;
 import com.danielsouza.cursomc.repositories.EnderecoRepository;
+import com.danielsouza.cursomc.security.JWTUtil;
 import com.danielsouza.cursomc.security.UserSS;
 import com.danielsouza.cursomc.services.exceptions.AuthorizationException;
 import com.danielsouza.cursomc.services.exceptions.DataIntegrityException;
@@ -38,15 +41,22 @@ public class ClienteService {
 
 	@Autowired
 	private BCryptPasswordEncoder pe;
+	
+	private static final Logger LOG = LoggerFactory.getLogger(JWTUtil.class);
 
 	public Cliente findById(Integer id) {
 		
 		UserSS user = UserService.authenticated();
 		if (user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+			LOG.info("Acesso negado");
+			LOG.info("user: " + user.getUsername());
+			LOG.info("ID: " + id);
+			LOG.info("userId: " + user.getId());
 			throw new AuthorizationException("Acesso negado");
 		}
-		
+		LOG.info("Buscar cliente.");
 		Optional<Cliente> cliente = repo.findById(id);
+		LOG.info("Cliente encontrado: " + cliente.toString());
 		return cliente.orElseThrow(() -> new ObjectNotFoundException("Nenhum Cliente encontrado para ID: " + id + "."));
 	}
 

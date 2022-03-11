@@ -45,7 +45,9 @@ public class JWTUtil {
 			Date now = new Date(System.currentTimeMillis());
 			LOG.info("Date now: " + now);
 			LOG.info("Date expiration: " + expiration);
+			LOG.info("Username: " + username);
 			if (username != null && expirationDate != null && now.before(expirationDate)) {
+				LOG.info("Token valido!");
 				return true;
 			}
 		}

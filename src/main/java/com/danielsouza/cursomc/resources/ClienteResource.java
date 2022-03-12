@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.danielsouza.cursomc.domain.Cliente;
@@ -28,33 +29,33 @@ import com.danielsouza.cursomc.services.ClienteService;
 public class ClienteResource {
 
 	@Autowired
-	private ClienteService clienteService;
+	private ClienteService service;
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Cliente> findById(@PathVariable Integer id) {
-		Cliente cliente = clienteService.findById(id);
+		Cliente cliente = service.findById(id);
 		return ResponseEntity.ok().body(cliente);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<Void> update(@Valid @RequestBody ClienteDTO objDTO, @PathVariable Integer id) {
-		Cliente obj = clienteService.fromDTO(objDTO);
+		Cliente obj = service.fromDTO(objDTO);
 		obj.setId(id);
-		obj = clienteService.update(obj);
+		obj = service.update(obj);
 		return ResponseEntity.noContent().build();
 	}
 
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> delete(@PathVariable Integer id) {
-		clienteService.delete(id);
+		service.delete(id);
 		return ResponseEntity.noContent().build();
 	}
 	
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<List<ClienteDTO>> findAll() {
-		List<Cliente> clientes = clienteService.findAll();
+		List<Cliente> clientes = service.findAll();
 		List<ClienteDTO> clientesDTO  = clientes.stream().map(obj -> new ClienteDTO(obj)).collect(Collectors.toList());
 		return ResponseEntity.ok().body(clientesDTO);
 	}
@@ -67,16 +68,23 @@ public class ClienteResource {
 			@RequestParam(value = "orderBy", defaultValue = "nome") String orderBy,
 			@RequestParam(value = "direction", defaultValue = "ASC") String direction
 			) {
-		Page<Cliente> clientes = clienteService.findPage(page, linesPerPage, orderBy, direction);
+		Page<Cliente> clientes = service.findPage(page, linesPerPage, orderBy, direction);
 		Page<ClienteDTO> clientesDTO  = clientes.map(obj -> new ClienteDTO(obj));
 		return ResponseEntity.ok().body(clientesDTO);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<Void> insert(@Valid @RequestBody ClienteNewDTO objDTO) {
-		Cliente obj = clienteService.fromDTO(objDTO);
-		obj = clienteService.insert(obj);
+		Cliente obj = service.fromDTO(objDTO);
+		obj = service.insert(obj);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
 		return ResponseEntity.created(uri).build();
 	}
+	
+	@RequestMapping(value = "/picture", method = RequestMethod.POST)
+	public ResponseEntity<Void> uploadProfilePicture(@RequestParam(name="file") MultipartFile file) {
+		URI uri = service.uploadProfilePicture(file);
+		return ResponseEntity.created(uri).build();
+	}
+	
 }
